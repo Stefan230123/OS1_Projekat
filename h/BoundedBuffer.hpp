@@ -9,10 +9,10 @@ public:
     ~BoundedBuffer();
     void putChar(char c);
     char getChar();
-    bool full() {
+    bool full() const {
         return counter == size;
     }
-    int count() {
+    int count() const {
         return counter;
     }
 private:

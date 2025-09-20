@@ -66,12 +66,6 @@ public:
     static uint64 r_sstatus();
     // write register sstatus
     static void w_sstatus(uint64 sstatus);
-    static void ms_sie(uint64 mask);
-    static void mc_sie(uint64 mask);
-    //read a0 register
-    static uint64 r_a0();
-    //write to a0 register
-    static void w_a0(uint64 writeValue);
 
     // supervisor trap
     static void supervisorTrap();
@@ -174,23 +168,6 @@ inline uint64 Riscv::r_sstatus() {
 
 inline void Riscv::w_sstatus(uint64 sstatus) {
     __asm__ volatile ("csrw sstatus, %[sstatus]" : : [sstatus] "r"(sstatus));
-}
-
-inline void Riscv::ms_sie(uint64 mask) {
-    __asm__ volatile("csrs sie, %[mask]"::[mask]"r"(mask));
-}
-inline void Riscv::mc_sie(uint64 mask) {
-    __asm__ volatile("csrsc sie, %[mask]"::[mask]"r"(mask));
-}
-
-inline uint64 Riscv::r_a0() {
-    uint64 volatile a0;
-    __asm__ volatile ("mv %0, a0" : "=r"(a0));
-    return a0;
-}
-
-inline void Riscv::w_a0(uint64 writeValue) {
-    __asm__ volatile ("mv a0, %0" : : "r"(writeValue));
 }
 
 #endif

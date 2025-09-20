@@ -19,10 +19,8 @@ void userThreadWrapper(void* arg) {
 int main() {
     //initialization of system threads
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
-    TCB::init();
     Riscv::init();
-    Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
-    Riscv::ms_sie(Riscv::SIE_SEIE);
+    TCB::init();
 
     //initialization of use thread
     _sem::sem_open(&waitUser, 0);

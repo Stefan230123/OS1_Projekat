@@ -25,7 +25,7 @@ void Riscv::restorePrivilege() {
     if (TCB::running->isSystemThread())
         ms_sstatus(SSTATUS_SPP);
     else {
-        //ms_sstatus(SSTATUS_SPIE);
+        ms_sstatus(SSTATUS_SPIE);
         mc_sstatus(SSTATUS_SPP);
     }
 }
@@ -109,7 +109,11 @@ void Riscv::handleSupervisorTrap() {
             case SEM_CLOSE: {
                 sem_t volatile id;
                 __asm__ volatile ("ld %0, 88(s0)" : "=r"(id));
-                int retValue = ((sem_t) id)->semClose();
+                int retValue;
+                if (id == nullptr)
+                    retValue = -2;
+                else
+                    retValue = ((sem_t) id)->semClose();
                 __asm__ volatile ("mv a0, %0" :: "r" (retValue));
                 __asm__ volatile ("sd a0, 80(s0)");
                 break;
@@ -117,17 +121,23 @@ void Riscv::handleSupervisorTrap() {
             case SEM_WAIT: {
                 sem_t volatile id;
                 __asm__ volatile ("ld %0, 88(s0)" : "=r"(id));
-                if (id != nullptr) {
-                    int retValue = ((sem_t) id)->semWait();
-                    __asm__ volatile ("mv a0, %0" :: "r" (retValue));
-                    __asm__ volatile ("sd a0, 80(s0)");
-                }
+                int retValue;
+                if (id == nullptr)
+                    retValue = -2;
+                else
+                    retValue = ((sem_t) id)->semWait();
+                __asm__ volatile ("mv a0, %0" :: "r" (retValue));
+                __asm__ volatile ("sd a0, 80(s0)");
                 break;
             }
             case SEM_SIGNAL: {
                 sem_t volatile id;
                 __asm__ volatile ("ld %0, 88(s0)" : "=r"(id));
-                int retValue = ((sem_t) id)->semSignal();
+                int retValue;
+                if (id == nullptr)
+                    retValue = -2;
+                else
+                    retValue = ((sem_t) id)->semSignal();
                 __asm__ volatile ("mv a0, %0" :: "r" (retValue));
                 __asm__ volatile ("sd a0, 80(s0)");
                 break;
@@ -159,8 +169,6 @@ void Riscv::handleSupervisorTrap() {
     }
     else if (scause == SOFTWARE_I) {
         //is interrupt, cause code, supervisor software interrupt (timer)
-        //uint64 volatile sstatus = r_sstatus();
-        //uint64 volatile sepc = r_sepc();
         TCB::timeSliceCounter++;
         Scheduler::getInstance().tick();
         mc_sip(SIP_SSIP);
@@ -173,8 +181,6 @@ void Riscv::handleSupervisorTrap() {
     }
     else if (scause == EXTERNAL_I) {
         //interrupt yes, cause code: supervisor external interrupt (console)
-        //uint64 volatile sstatus = r_sstatus();
-        //uint64 volatile sepc = r_sepc();
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ) {
             char volatile status = (* (char*) CONSOLE_STATUS);

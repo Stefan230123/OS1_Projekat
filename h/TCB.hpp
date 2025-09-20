@@ -31,7 +31,9 @@ public:
     static int createThread(TCB* handle ,Body body, void* arg, uint64* stack);
     static void dispatch();
     static int exit();
+    static int sleep(time_t time);
     void ready();
+
 private:
     TCB(Body body, void *arg, uint64 *stack) : body(body),
     stack(body != nullptr ? (uint64 *) (stack + DEFAULT_STACK_SIZE): nullptr),
@@ -41,8 +43,7 @@ private:
         systemThread(false),
         finished(false),
         status(CREATED) {
-        this->arg = arg;
-
+            this->arg = arg;
     }
 
     struct Context {
@@ -75,8 +76,6 @@ private:
     static void outputWrapper(void *arg);
 
     static void contextSwitch(Context *oldContext, Context *runningContext);
-
-    static int sleep(time_t time);
 };
 
 #endif

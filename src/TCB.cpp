@@ -93,9 +93,10 @@ void TCB::outputWrapper(void* arg) {
 }
 
 void TCB::ready() {
-
+    if (body) {
         this->status = READY;
         Scheduler::getInstance().put(this);
+    }
 }
 
 int TCB::exit() {
